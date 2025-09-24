@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: ai-xlei-zerocode-platform-backend
+server:
+  port: 8090
+  servlet:
+    context-path: /api
+
+# springdoc-openapi
+# ????Swagger: http://localhost:8090/api/doc.html#/home
+springdoc:
+  group-configs:
+    - group: 'default'
+      packages-to-scan: com.xlei.zerocode.controller
+# knife4j
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
