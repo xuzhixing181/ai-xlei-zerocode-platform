@@ -1,6 +1,12 @@
 spring:
   application:
     name: ai-xlei-zerocode-platform-backend
+  # mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai_xlei_zerocode
+    username: root
+    password: 123456
 server:
   port: 8090
   servlet:
