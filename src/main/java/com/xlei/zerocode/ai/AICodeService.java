@@ -3,6 +3,7 @@ package com.xlei.zerocode.ai;
 import com.xlei.zerocode.ai.model.HtmlCodeResult;
 import com.xlei.zerocode.ai.model.MultiFileCodeResult;
 import dev.langchain4j.service.SystemMessage;
+import reactor.core.publisher.Flux;
 
 /**
  * @author https://github.com/xuzhixing181
@@ -26,4 +27,23 @@ public interface AICodeService {
      */
     @SystemMessage(fromResource = "prompt/multi-file-system-prompt.txt")
     MultiFileCodeResult generateMultiFileCode(String userMessage);
+
+    /**
+     * 流式 生成 HTML 代码
+     *
+     * @param userMessage 用户消息
+     * @return 生成的代码结果
+     */
+    @SystemMessage(fromResource = "prompt/html-system-prompt.txt")
+    Flux<String> generateHtmlCodeStream(String userMessage);
+
+    /**
+     * 流式 生成多文件代码（流式）
+     *
+     * @param userMessage 用户消息
+     * @return 生成的代码结果
+     */
+    @SystemMessage(fromResource = "prompt/multi-file-system-prompt.txt")
+    Flux<String> generateMultiFileCodeStream(String userMessage);
+
 }
