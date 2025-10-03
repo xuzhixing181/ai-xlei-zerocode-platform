@@ -22,5 +22,6 @@ public interface UserConstants {
      */
     String ADMIN_ROLE = "admin";
 
-    // endregion
+    //
+    final String DEFAULT_PASSWORD = "12345678";
 }

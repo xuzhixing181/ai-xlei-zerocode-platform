@@ -5,22 +5,27 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.xlei.zerocode.exception.BusinessException;
 import com.xlei.zerocode.exception.ErrorCode;
+import com.xlei.zerocode.exception.ThrowUtils;
+import com.xlei.zerocode.model.dto.user.UserAddRequest;
+import com.xlei.zerocode.model.dto.user.UserQueryRequest;
 import com.xlei.zerocode.model.entity.User;
 import com.xlei.zerocode.mapper.UserMapper;
 import com.xlei.zerocode.model.enums.UserRoleEnum;
 import com.xlei.zerocode.model.vo.LoginUserVO;
+import com.xlei.zerocode.model.vo.UserVO;
 import com.xlei.zerocode.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.ibatis.builder.BuilderException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
-import java.util.UUID;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
+import static com.xlei.zerocode.constants.UserConstants.DEFAULT_PASSWORD;
 import static com.xlei.zerocode.constants.UserConstants.USER_LOGIN_STATE;
 
 /**
@@ -61,6 +66,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         return user.getId();
     }
 
+    @Override
     public String getEncryptPassword(String password){
         String SALT = "xlei-zerocode";
         return DigestUtils.md5DigestAsHex((password + SALT).getBytes());
@@ -116,5 +122,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         }
         return curUser;
     }
+
+    @Override
+    public Long addUser(UserAddRequest userAddRequest) {
+        String encryptPassword = getEncryptPassword(DEFAULT_PASSWORD);
+        User user = new User();
+        BeanUtils.copyProperties(userAddRequest, user);
+        user.setUserPassword(encryptPassword);
+        boolean save = this.save(user);
+        ThrowUtils.throwIf(!save,ErrorCode.SYSTEM_ERROR);
+        return user.getId();
+    }
+
+    @Override
+    public List<UserVO> getUserVOList(List<User> userList) {
+        if (CollectionUtils.isEmpty(userList)){
+            return List.of();
+        }
+        return userList.stream().map(this::getUserVO).collect(Collectors.toList());
+    }
+
+    public UserVO getUserVO(User user) {
+        if (user == null) return null;
+
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
+    }
+    @Override
+    public QueryWrapper getQueryWrapper(UserQueryRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        return QueryWrapper.create()
+                .eq("id", request.getId())
+                .eq("user_role", request.getUserRole())
+                .like("user_account", request.getUserAccount())
+                .like("user_name", request.getUserName())
+                .like("user_profile", request.getUserProfile())
+                .orderBy(request.getSortField(), "ascend".equals(request.getSortOrder()));
+    }
+
 
 }

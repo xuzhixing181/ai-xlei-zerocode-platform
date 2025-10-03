@@ -1,14 +1,21 @@
 package com.xlei.zerocode.controller;
 
 import com.mybatisflex.core.paginate.Page;
+import com.xlei.zerocode.annotation.AuthCheck;
 import com.xlei.zerocode.common.BaseResponse;
+import com.xlei.zerocode.common.DeleteRequest;
 import com.xlei.zerocode.common.ResultUtils;
+import com.xlei.zerocode.constants.UserConstants;
 import com.xlei.zerocode.exception.BusinessException;
 import com.xlei.zerocode.exception.ErrorCode;
 import com.xlei.zerocode.exception.ThrowUtils;
 import com.xlei.zerocode.model.dto.UserLoginRequest;
 import com.xlei.zerocode.model.dto.UserRegisterRequest;
+import com.xlei.zerocode.model.dto.user.UserAddRequest;
+import com.xlei.zerocode.model.dto.user.UserQueryRequest;
+import com.xlei.zerocode.model.dto.user.UserUpdateRequest;
 import com.xlei.zerocode.model.vo.LoginUserVO;
+import com.xlei.zerocode.model.vo.UserVO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
@@ -96,68 +103,95 @@ public class UserController {
     }
 
     /**
-     * 保存用户。
-     *
-     * @param user 用户
-     * @return {@code true} 保存成功，{@code false} 保存失败
+     * 管理员查看用户详情
+     * @param id
+     * @return
      */
-    @PostMapping("save")
-    public boolean save(@RequestBody User user) {
-        return userService.save(user);
+    @GetMapping("/getUser")
+    @AuthCheck(mustRule = UserConstants.ADMIN_ROLE)
+    public BaseResponse<User> getUserById(Long id){
+        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        User user = userService.getById(id);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
+        return ResultUtils.success(user);
     }
 
     /**
-     * 根据主键删除用户。
-     *
-     * @param id 主键
-     * @return {@code true} 删除成功，{@code false} 删除失败
+     * 查看用户详情
+     * @param id
+     * @return
      */
-    @DeleteMapping("remove/{id}")
-    public boolean remove(@PathVariable Long id) {
-        return userService.removeById(id);
+    @GetMapping("/getUserVO")
+    public BaseResponse<UserVO> getUserVOById(Long id){
+        User user = getUserById(id).getData();
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user,userVO);
+        return ResultUtils.success(userVO);
+    }
+
+
+
+    /**
+     * 管理员创建用户
+     * @param request
+     * @return
+     */
+    @PostMapping("/add")
+    @AuthCheck(mustRule = UserConstants.ADMIN_ROLE)
+    public BaseResponse<Long> addUser(@RequestBody UserAddRequest request){
+        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
+        Long userId = userService.addUser(request);
+        return ResultUtils.success(userId);
     }
 
     /**
-     * 根据主键更新用户。
-     *
-     * @param user 用户
-     * @return {@code true} 更新成功，{@code false} 更新失败
+     * 管理员删除用户
+     * @param request
+     * @return
      */
-    @PutMapping("update")
-    public boolean update(@RequestBody User user) {
-        return userService.updateById(user);
+    @DeleteMapping("/delete")
+    @AuthCheck(mustRule = UserConstants.ADMIN_ROLE)
+    public BaseResponse<Boolean> deleteById(@RequestBody DeleteRequest request){
+        ThrowUtils.throwIf(request == null || request.getId() <= 0, ErrorCode.PARAMS_ERROR);
+        boolean remove = userService.removeById(request.getId());
+        ThrowUtils.throwIf(!remove, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(remove);
     }
 
     /**
-     * 查询所有用户。
-     *
-     * @return 所有数据
+     * 管理员更新用户
+     * @param request
+     * @return
      */
-    @GetMapping("list")
-    public List<User> list() {
-        return userService.list();
+    @PostMapping("/update")
+    @AuthCheck(mustRule = UserConstants.ADMIN_ROLE)
+    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest request){
+        ThrowUtils.throwIf(request == null || request.getId() <= 0, ErrorCode.PARAMS_ERROR);
+        User user = new User();
+        BeanUtils.copyProperties(request,user);
+        boolean update = userService.updateById(user);
+        ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(update);
     }
 
     /**
-     * 根据主键获取用户。
-     *
-     * @param id 用户主键
-     * @return 用户详情
+     * 管理员 分页查询用户的脱敏信息
+     * @param request
+     * @return
      */
-    @GetMapping("getInfo/{id}")
-    public User getInfo(@PathVariable Long id) {
-        return userService.getById(id);
-    }
+    @PostMapping("/list/pageVO")
+    @AuthCheck(mustRule = UserConstants.ADMIN_ROLE)
+    public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest request){
+        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
+        int pageNum = request.getPageNum();
+        int pageSize = request.getPageSize();
+        Page<User> page = userService.page(Page.of(pageNum, pageSize), userService.getQueryWrapper(request));
 
-    /**
-     * 分页查询用户。
-     *
-     * @param page 分页对象
-     * @return 分页对象
-     */
-    @GetMapping("page")
-    public Page<User> page(Page<User> page) {
-        return userService.page(page);
+        // 对查询到的用户信息脱敏处理
+        Page<UserVO> userVoPage = new Page<>(pageNum, pageSize, page.getTotalRow());
+        List<UserVO> userVOList = userService.getUserVOList(page.getRecords());
+        userVoPage.setRecords(userVOList);
+        return ResultUtils.success(userVoPage);
     }
 
 }
