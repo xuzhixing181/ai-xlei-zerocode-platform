@@ -12,9 +12,36 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public interface UserService extends IService<User> {
 
+    /**
+     * 用户注册
+     * @param userAccount
+     * @param userPassword
+     * @param checkPassword
+     * @return
+     */
     Long register(String userAccount, String userPassword, String checkPassword);
 
+    /**
+     * 用户登录
+     * @param userAccount
+     * @param userPassword
+     * @param request
+     * @return
+     */
     LoginUserVO login(String userAccount, String userPassword, HttpServletRequest request);
 
+    /**
+     * 用户退出登录
+     * @param request
+     * @return
+     */
     Boolean logout(HttpServletRequest request);
+
+    /**
+     * 获取当前登录用户
+     * @param request
+     * @return
+     */
+    User getLoginUser(HttpServletRequest request);
+
 }

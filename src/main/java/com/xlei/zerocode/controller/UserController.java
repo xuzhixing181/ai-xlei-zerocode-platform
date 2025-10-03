@@ -86,12 +86,12 @@ public class UserController {
      */
     @GetMapping("/getLoginUser")
     public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request){
-        User curUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (curUser == null || curUser.getId() == null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null){
+            return ResultUtils.success(null);
         }
         LoginUserVO loginUserVO = new LoginUserVO();
-        BeanUtils.copyProperties(curUser,loginUserVO);
+        BeanUtils.copyProperties(loginUser,loginUserVO);
         return ResultUtils.success(loginUserVO);
     }
 
