@@ -14,7 +14,7 @@ import java.util.Map;
 public class MyBatisFlexCodeGenerator {
 
     // 需要生成的表名
-    private static final String[] TABLE_NAMES = {"t_user"};
+    private static final String[] TABLE_NAMES = {"t_app"};
 
     public static void main(String[] args) {
         // 读取配置,获取数据源信息

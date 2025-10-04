@@ -142,6 +142,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         return userList.stream().map(this::getUserVO).collect(Collectors.toList());
     }
 
+
     public UserVO getUserVO(User user) {
         if (user == null) return null;
 

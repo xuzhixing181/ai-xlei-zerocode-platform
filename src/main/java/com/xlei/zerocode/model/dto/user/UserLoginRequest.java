@@ -1,4 +1,4 @@
-package com.xlei.zerocode.model.dto;
+package com.xlei.zerocode.model.dto.user;
 
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @author https://github.com/xuzhixing181
  */
 @Data
-public class UserRegisterRequest implements Serializable {
+public class UserLoginRequest implements Serializable {
 
     private static final long serialVersionUID = 3191241716373120793L;
 
@@ -21,9 +21,4 @@ public class UserRegisterRequest implements Serializable {
      * 密码
      */
     private String userPassword;
-
-    /**
-     * 确认密码
-     */
-    private String checkPassword;
 }

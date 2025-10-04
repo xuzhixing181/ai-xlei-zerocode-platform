@@ -6,11 +6,10 @@ import com.xlei.zerocode.common.BaseResponse;
 import com.xlei.zerocode.common.DeleteRequest;
 import com.xlei.zerocode.common.ResultUtils;
 import com.xlei.zerocode.constants.UserConstants;
-import com.xlei.zerocode.exception.BusinessException;
 import com.xlei.zerocode.exception.ErrorCode;
 import com.xlei.zerocode.exception.ThrowUtils;
-import com.xlei.zerocode.model.dto.UserLoginRequest;
-import com.xlei.zerocode.model.dto.UserRegisterRequest;
+import com.xlei.zerocode.model.dto.user.UserLoginRequest;
+import com.xlei.zerocode.model.dto.user.UserRegisterRequest;
 import com.xlei.zerocode.model.dto.user.UserAddRequest;
 import com.xlei.zerocode.model.dto.user.UserQueryRequest;
 import com.xlei.zerocode.model.dto.user.UserUpdateRequest;
@@ -22,17 +21,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.xlei.zerocode.model.entity.User;
 import com.xlei.zerocode.service.UserService;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
-
-import static com.xlei.zerocode.constants.UserConstants.USER_LOGIN_STATE;
 
 /**
  * 用户 控制层。
