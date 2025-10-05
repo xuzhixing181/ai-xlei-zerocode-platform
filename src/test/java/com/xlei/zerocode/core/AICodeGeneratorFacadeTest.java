@@ -21,13 +21,13 @@ class AICodeGeneratorFacadeTest {
 
     @Test
     public void generateAndSaveCode() {
-        File file = aiCodeGeneratorFacade.generateAndSaveCode("请生成一个后台系统的登录页面,代码要求不超过30行", CodeGeneratorTypeEnum.MULTI_FILE);
+        File file = aiCodeGeneratorFacade.generateAndSaveCode("请生成一个后台系统的登录页面,代码要求不超过30行", CodeGeneratorTypeEnum.MULTI_FILE, 1L);
         Assertions.assertNotNull(file);
     }
 
     @Test
     public void generateAndSaveCodeWithStream() {
-        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeWithStream("请生成一个用户管理系统,要求代码尽可能精简", CodeGeneratorTypeEnum.MULTI_FILE);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeWithStream("请生成一个用户管理系统,要求代码尽可能精简", CodeGeneratorTypeEnum.MULTI_FILE, 1L);
         // 阻塞等待所有AI回答收集完成
         List<String> result = codeStream.collectList().block();
         Assertions.assertNotNull(result);

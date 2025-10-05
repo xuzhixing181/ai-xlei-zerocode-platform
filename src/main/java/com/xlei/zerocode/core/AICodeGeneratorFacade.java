@@ -33,7 +33,7 @@ public class AICodeGeneratorFacade {
      * @param codeTypeEnum
      * @return
      */
-    public File generateAndSaveCode(String userMessage, CodeGeneratorTypeEnum codeTypeEnum){
+    public File generateAndSaveCode(String userMessage, CodeGeneratorTypeEnum codeTypeEnum,Long appId){
         if (codeTypeEnum == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"生成类型不能为空");
         }
@@ -41,11 +41,11 @@ public class AICodeGeneratorFacade {
             // 生成 HTML 代码 并 保存
             case HTML:
                 HtmlCodeResult htmlCodeResult = aiCodeService.generateHtmlCode(userMessage);
-                return CodeFileSaver.saveHtmlCodeResult(htmlCodeResult);
+                return CodeFileSaver.saveHtmlCodeResult(htmlCodeResult, appId);
             // 生成多文件代码 并 保存
             case MULTI_FILE:
                 MultiFileCodeResult multiFileCodeResult = aiCodeService.generateMultiFileCode(userMessage);
-                return CodeFileSaver.saveMultiFileCodeResult(multiFileCodeResult);
+                return CodeFileSaver.saveMultiFileCodeResult(multiFileCodeResult, appId);
             default:
                 String errMessage = "不支持的文件生成类型: " + codeTypeEnum.getValue();
                 throw new BusinessException(ErrorCode.PARAMS_ERROR,errMessage);
@@ -58,15 +58,15 @@ public class AICodeGeneratorFacade {
      * @param codeTypeEnum
      * @return
      */
-    public Flux<String> generateAndSaveCodeWithStream(String userMessage, CodeGeneratorTypeEnum codeTypeEnum){
+    public Flux<String> generateAndSaveCodeWithStream(String userMessage, CodeGeneratorTypeEnum codeTypeEnum, Long appId){
         if (codeTypeEnum == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"生成类型不能为空");
         }
         return switch (codeTypeEnum){
             // 生成 HTML 代码 并 保存
-            case HTML -> generateAndSaveHtmlCodeWithStream(userMessage);
+            case HTML -> generateAndSaveHtmlCodeWithStream(userMessage, appId);
             // 生成多文件代码 并 保存
-            case MULTI_FILE -> generateAndSaveMultiFileCodeWithStream(userMessage);
+            case MULTI_FILE -> generateAndSaveMultiFileCodeWithStream(userMessage, appId);
             default -> {
                 String errMessage = "不支持的文件生成类型: " + codeTypeEnum.getValue();
                 throw new BusinessException(ErrorCode.PARAMS_ERROR,errMessage);
@@ -79,7 +79,7 @@ public class AICodeGeneratorFacade {
      * @param userMessage
      * @return
      */
-    private Flux<String> generateAndSaveHtmlCodeWithStream(String userMessage) {
+    private Flux<String> generateAndSaveHtmlCodeWithStream(String userMessage,Long appId) {
         Flux<String> result = aiCodeStreamService.generateHtmlCodeStream(userMessage);
         StringBuilder builder = new StringBuilder();
         return result.doOnNext(chunk -> {
@@ -89,7 +89,7 @@ public class AICodeGeneratorFacade {
             try {
                 // 流式返回完成后保存代码
                 HtmlCodeResult htmlCodeResult = CodeParser.parseHtmlCode(builder.toString());
-                File file = CodeFileSaver.saveHtmlCodeResult(htmlCodeResult);
+                File file = CodeFileSaver.saveHtmlCodeResult(htmlCodeResult,appId);
                 log.info("单网页模式, 文件保存成功,路径为: {}", file.getAbsolutePath());
             } catch (Exception e) {
                 log.error("单网页模式, 文件保存失败: {}", e.getMessage());
@@ -102,7 +102,7 @@ public class AICodeGeneratorFacade {
      * @param userMessage
      * @return
      */
-    private Flux<String> generateAndSaveMultiFileCodeWithStream(String userMessage) {
+    private Flux<String> generateAndSaveMultiFileCodeWithStream(String userMessage,Long appId) {
         Flux<String> result = aiCodeStreamService.generateMultiFileCodeStream(userMessage);
         StringBuilder builder = new StringBuilder();
         return result.doOnNext(chunk -> {
@@ -112,7 +112,7 @@ public class AICodeGeneratorFacade {
             try {
                 // 流式返回完成后保存代码
                 MultiFileCodeResult multiFileCodeResult = CodeParser.parseMultiFileCode(builder.toString());
-                File file = CodeFileSaver.saveMultiFileCodeResult(multiFileCodeResult);
+                File file = CodeFileSaver.saveMultiFileCodeResult(multiFileCodeResult,appId);
                 log.info("多文件模式, 文件保存成功,路径为: {}", file.getAbsolutePath());
             } catch (Exception e) {
                 log.error("多文件模式, 文件保存失败: {}", e.getMessage());

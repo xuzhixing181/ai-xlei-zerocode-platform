@@ -6,6 +6,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.xlei.zerocode.common.DeleteRequest;
+import com.xlei.zerocode.core.AICodeGeneratorFacade;
 import com.xlei.zerocode.exception.BusinessException;
 import com.xlei.zerocode.exception.ErrorCode;
 import com.xlei.zerocode.exception.ThrowUtils;
@@ -26,6 +27,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +45,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private AICodeGeneratorFacade aiCodeGeneratorFacade;
 
     @Override
     public Long addApp(AppAddRequest appAddRequest, HttpServletRequest request) {
@@ -188,6 +193,19 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         app.setEditTime(LocalDateTime.now());
         boolean update = this.updateById(app);
         return update;
+    }
+
+    @Override
+    public Flux<String> gencodeByChat(Long appId, String message, User loginUser) {
+        App app = this.getById(appId);
+        ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR, "该应用已不存在");
+
+        // 只有应用创建者可通过对话 生成代码
+        ThrowUtils.throwIf(!app.getUserId().equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR,"访问该应用无权限");
+
+        CodeGeneratorTypeEnum codeTypeEnum = CodeGeneratorTypeEnum.getEnumByValue(app.getCodeGenType());
+        ThrowUtils.throwIf(codeTypeEnum == null, ErrorCode.SYSTEM_ERROR,"代码生成类型不支持");
+        return aiCodeGeneratorFacade.generateAndSaveCodeWithStream(message, codeTypeEnum, appId);
     }
 
 

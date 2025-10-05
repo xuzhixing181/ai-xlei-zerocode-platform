@@ -9,8 +9,10 @@ import com.xlei.zerocode.model.dto.app.AppAdminUpdateRequest;
 import com.xlei.zerocode.model.dto.app.AppQueryRequest;
 import com.xlei.zerocode.model.dto.app.AppUpdateRequest;
 import com.xlei.zerocode.model.entity.App;
+import com.xlei.zerocode.model.entity.User;
 import com.xlei.zerocode.model.vo.AppVO;
 import jakarta.servlet.http.HttpServletRequest;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -38,4 +40,7 @@ public interface AppService extends IService<App> {
     Boolean adminDeleteApp(DeleteRequest deleteRequest, HttpServletRequest request);
 
     Boolean adminUpdateApp(AppAdminUpdateRequest updateRequest);
+
+    Flux<String> gencodeByChat(Long appId, String message, User loginUser);
+
 }

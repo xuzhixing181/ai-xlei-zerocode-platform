@@ -1,5 +1,6 @@
 package com.xlei.zerocode.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.xlei.zerocode.annotation.AuthCheck;
 import com.xlei.zerocode.common.BaseResponse;
@@ -12,16 +13,16 @@ import com.xlei.zerocode.model.dto.app.AppAddRequest;
 import com.xlei.zerocode.model.dto.app.AppAdminUpdateRequest;
 import com.xlei.zerocode.model.dto.app.AppQueryRequest;
 import com.xlei.zerocode.model.dto.app.AppUpdateRequest;
-import com.xlei.zerocode.model.dto.user.UserQueryRequest;
 import com.xlei.zerocode.model.entity.App;
 import com.xlei.zerocode.model.entity.User;
 import com.xlei.zerocode.model.vo.AppVO;
-import com.xlei.zerocode.model.vo.UserVO;
 import com.xlei.zerocode.service.AppService;
+import com.xlei.zerocode.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -34,6 +35,9 @@ public class AppController {
 
     @Resource
     private AppService appService;
+
+    @Resource
+    private UserService userService;
 
     @PostMapping("/add")
     public BaseResponse<Long> addApp(@RequestBody AppAddRequest appAddRequest, HttpServletRequest request){
@@ -134,72 +138,19 @@ public class AppController {
         return ResultUtils.success(appVO);
     }
 
-
-
-
     /**
-     * 保存应用。
-     *
-     * @param app 应用
-     * @return {@code true} 保存成功，{@code false} 保存失败
+     * 通过对话内容 生成代码
+     * @param appId
+     * @param message
+     * @param request
+     * @return
      */
-    @PostMapping("save")
-    public boolean save(@RequestBody App app) {
-        return appService.save(app);
-    }
+    @GetMapping(value = "/gencode/byChat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> gencodeByChat(@RequestParam Long appId, @RequestParam String message, HttpServletRequest request){
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用id错误");
+        ThrowUtils.throwIf(StrUtil.isBlank(message), ErrorCode.PARAMS_ERROR, "用户提示词不能为空");
 
-    /**
-     * 根据主键删除应用。
-     *
-     * @param id 主键
-     * @return {@code true} 删除成功，{@code false} 删除失败
-     */
-    @DeleteMapping("remove/{id}")
-    public boolean remove(@PathVariable Long id) {
-        return appService.removeById(id);
+        User loginUser = userService.getLoginUser(request);
+        return appService.gencodeByChat(appId,message,loginUser);
     }
-
-    /**
-     * 根据主键更新应用。
-     *
-     * @param app 应用
-     * @return {@code true} 更新成功，{@code false} 更新失败
-     */
-    @PutMapping("update")
-    public boolean update(@RequestBody App app) {
-        return appService.updateById(app);
-    }
-
-    /**
-     * 查询所有应用。
-     *
-     * @return 所有数据
-     */
-    @GetMapping("list")
-    public List<App> list() {
-        return appService.list();
-    }
-
-    /**
-     * 根据主键获取应用。
-     *
-     * @param id 应用主键
-     * @return 应用详情
-     */
-    @GetMapping("getInfo/{id}")
-    public App getInfo(@PathVariable Long id) {
-        return appService.getById(id);
-    }
-
-    /**
-     * 分页查询应用。
-     *
-     * @param page 分页对象
-     * @return 分页对象
-     */
-    @GetMapping("page")
-    public Page<App> page(Page<App> page) {
-        return appService.page(page);
-    }
-
 }
