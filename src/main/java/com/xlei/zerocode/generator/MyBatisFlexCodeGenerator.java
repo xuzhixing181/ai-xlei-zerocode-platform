@@ -14,7 +14,7 @@ import java.util.Map;
 public class MyBatisFlexCodeGenerator {
 
     // 需要生成的表名
-    private static final String[] TABLE_NAMES = {"t_app"};
+    private static final String[] TABLE_NAMES = {"t_chat_history"};
 
     public static void main(String[] args) {
         // 读取配置,获取数据源信息
@@ -69,7 +69,7 @@ public class MyBatisFlexCodeGenerator {
         globalConfig.enableServiceImpl();
 
         // 设置生成 controller
-        globalConfig.enableController();
+//        globalConfig.enableController();
 
         // 设置生成时间和字符串为空，避免多余的代码改动
         globalConfig.getJavadocConfig()
